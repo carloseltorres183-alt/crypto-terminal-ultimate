@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Institutional Analysis Terminal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:#030810}
+body{font-family:'JetBrains Mono',monospace;color:#b8ccd8;display:flex;flex-direction:column}
+.term{flex:1;display:flex;flex-direction:column;max-width:1200px;width:100%;margin:20px auto;border:1px solid rgba(255,168,0,0.2);border-radius:10px;overflow:hidden;background:#060b12}
+.term-header{background:#0a1219;border-bottom:1px solid rgba(255,168,0,0.25);padding:11px 18px;display:flex;align-items:center;justify-content:space-between}
+.term-logo{color:#f0a500;font-size:12px;font-weight:700;letter-spacing:3px}
+.term-status{display:flex;align-items:center;gap:8px;font-size:10px;color:#4a6070}
+.dot{width:6px;height:6px;border-radius:50%;background:#00c878;animation:blink 1.5s infinite;flex-shrink:0}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+.term-body{display:grid;grid-template-columns:1fr 210px;flex:1}
+.term-main{padding:16px;border-right:1px solid rgba(255,168,0,0.08);display:flex;flex-direction:column;gap:10px}
+.term-sidebar{background:#070d14;padding:12px;overflow-y:auto;display:flex;flex-direction:column;gap:0}
+.label{font-size:9px;color:#4a6070;letter-spacing:2px;text-transform:uppercase;margin-bottom:3px}
+.input-row{display:flex;gap:8px;align-items:flex-end}
+.ticker-input{background:#0a1520;border:1px solid rgba(255,168,0,0.3);color:#f0a500;font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:700;padding:9px 13px;width:100%;letter-spacing:2px;outline:none;border-radius:4px;text-transform:uppercase}
+.ticker-input:focus{border-color:rgba(255,168,0,0.7);box-shadow:0 0 0 2px rgba(255,168,0,0.08)}
+.ticker-input::placeholder{color:#1e3040;font-weight:400;font-size:12px;letter-spacing:1px}
+.btn-analyze{background:#f0a500;color:#060b12;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;letter-spacing:1.5px;padding:9px 16px;border:none;cursor:pointer;border-radius:4px;white-space:nowrap;height:40px;flex-shrink:0;transition:background 0.15s}
+.btn-analyze:hover{background:#ffc030}
+.btn-analyze:disabled{background:#3a3000;color:#6a5000;cursor:not-allowed}
+.tag-row{display:flex;gap:5px;flex-wrap:wrap}
+.tag{font-size:9px;padding:3px 10px;border-radius:2px;border:1px solid;cursor:pointer;background:transparent;letter-spacing:1px;transition:background 0.12s}
+.tag-btc{color:#f0a500;border-color:rgba(255,168,0,0.22)}.tag-btc:hover{background:rgba(255,168,0,0.08)}
+.tag-eth{color:#7ac4e0;border-color:rgba(122,196,224,0.22)}.tag-eth:hover{background:rgba(122,196,224,0.08)}
+.tag-sol{color:#a855f7;border-color:rgba(168,85,247,0.22)}.tag-sol:hover{background:rgba(168,85,247,0.08)}
+.tag-bnb{color:#f9d423;border-color:rgba(249,212,35,0.22)}.tag-bnb:hover{background:rgba(249,212,35,0.08)}
+.tag-xrp{color:#00b4d8;border-color:rgba(0,180,216,0.22)}.tag-xrp:hover{background:rgba(0,180,216,0.08)}
+.tag-link{color:#a855f7;border-color:rgba(168,85,247,0.22)}.tag-link:hover{background:rgba(168,85,247,0.08)}
+.tag-avax{color:#ff4d4d;border-color:rgba(255,77,77,0.22)}.tag-avax:hover{background:rgba(255,77,77,0.08)}
+.tag-ada{color:#4a9eff;border-color:rgba(74,158,255,0.22)}.tag-ada:hover{background:rgba(74,158,255,0.08)}
+.prompt-toggle{background:transparent;border:1px solid rgba(255,168,0,0.15);color:#5a7080;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:1px;padding:4px 10px;cursor:pointer;border-radius:3px;text-align:left;transition:all 0.12s}
+.prompt-toggle:hover{border-color:rgba(255,168,0,0.4);color:#f0a500}
+.prompt-area{background:#0a1520;border:1px solid rgba(255,168,0,0.12);color:#6a8a9a;font-family:'JetBrains Mono',monospace;font-size:9px;padding:10px;width:100%;height:140px;resize:vertical;outline:none;border-radius:4px;line-height:1.55}
+.prompt-area:focus{border-color:rgba(255,168,0,0.28)}
+.output-wrap{background:#0a1219;border:1px solid rgba(255,168,0,0.1);border-radius:4px;padding:16px;flex:1;min-height:320px;overflow-y:auto}
+.out-placeholder{color:#1e3040;font-size:11px;line-height:2.2;text-align:center;padding-top:40px}
+.cursor-blink{display:inline-block;width:8px;height:15px;background:#f0a500;animation:blink 1s infinite;vertical-align:middle;margin-left:2px}
+.loading-wrap{text-align:center;padding:60px 0;color:#4a6070;font-size:11px}
+.spinner{border:2px solid rgba(255,168,0,0.1);border-top:2px solid #f0a500;border-radius:50%;width:28px;height:28px;animation:spin 0.7s linear infinite;margin:0 auto 16px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.load-sub{color:#243040;font-size:9px;margin-top:10px;line-height:2}
+.out-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid rgba(255,168,0,0.15)}
+.out-header-left{color:#f0a500;font-size:13px;font-weight:700;letter-spacing:2px}
+.out-header-right{display:flex;align-items:center;gap:6px;font-size:9px;color:#3a5060}
+.web-badge{background:rgba(0,200,120,0.1);border:1px solid rgba(0,200,120,0.25);color:#00c878;padding:2px 8px;border-radius:2px;letter-spacing:1px;font-size:8px}
+.md-h2{color:#f0a500;font-size:10.5px;font-weight:700;letter-spacing:1.5px;margin:18px 0 7px;padding:4px 0;border-bottom:1px solid rgba(255,168,0,0.1);text-transform:uppercase}
+.md-h3{color:#7ac4e0;font-size:10px;font-weight:600;margin:11px 0 4px}
+.md-bullet{color:#8aaabb;font-size:10px;line-height:1.8;padding-left:15px;position:relative}
+.md-bullet::before{content:"▸";position:absolute;left:0;color:#f0a500;font-size:9px;top:2px}
+.md-text{color:#8aaabb;font-size:10px;line-height:1.8}
+.md-bold{color:#d4b060;font-weight:600}
+.md-bull{color:#00c878;font-weight:600}
+.md-bear{color:#ff4d4d;font-weight:600}
+.md-neut{color:#f0a500;font-weight:600}
+.md-notrade{background:rgba(255,168,0,0.07);border:1px solid rgba(255,168,0,0.25);color:#f0a500;font-size:12px;font-weight:700;padding:10px 16px;border-radius:3px;letter-spacing:2px;text-align:center;margin:14px 0}
+.md-space{height:3px}
+.citations-wrap{margin-top:16px;padding-top:12px;border-top:1px solid rgba(255,168,0,0.08)}
+.citations-title{font-size:8px;color:#2a4050;letter-spacing:2px;text-transform:uppercase;margin-bottom:7px}
+.cite-item{font-size:9px;color:#3a5060;padding:3px 0;display:flex;align-items:flex-start;gap:6px;line-height:1.5}
+.cite-num{color:#f0a500;flex-shrink:0;font-size:8px;margin-top:1px}
+.cite-link{color:#3a5060;text-decoration:none;word-break:break-all}
+.cite-link:hover{color:#7ac4e0}
+.err{color:#ff4d4d;font-size:10px;padding:9px;background:rgba(255,77,77,0.07);border:1px solid rgba(255,77,77,0.18);border-radius:3px}
+.sb-title{font-size:8px;letter-spacing:2px;color:#2a4050;margin-bottom:9px;text-transform:uppercase}
+.hist-item{background:#0a1520;border:1px solid rgba(255,168,0,0.07);border-radius:3px;padding:8px;margin-bottom:6px;cursor:pointer;transition:border-color 0.12s}
+.hist-item:hover{border-color:rgba(255,168,0,0.28)}
+.hist-item.active{border-color:rgba(255,168,0,0.5);background:#0d1a28}
+.hist-ticker{color:#f0a500;font-size:11px;font-weight:700;letter-spacing:2px}
+.hist-time{color:#2a4050;font-size:8.5px;margin-top:2px}
+.hist-src{color:#00c878;font-size:8px;margin-top:2px}
+.hist-empty{color:#1e3040;font-size:9px;text-align:center;margin-top:24px;line-height:2.2}
+.sb-divider{border:none;border-top:1px solid rgba(255,168,0,0.06);margin:12px 0}
+.sb-note{color:#1a3040;font-size:8.5px;line-height:1.8;margin-top:auto;padding-top:10px}
+.sb-note span{color:#2a4a5a}
+
+@media(max-width:768px){
+  .term{margin:0;border-radius:0;border:none}
+  .term-body{grid-template-columns:1fr}
+  .term-sidebar{display:none}
+}
+</style>
+</head>
+<body>
+<div class="term">
+  <div class="term-header">
+    <div class="term-logo">▣ INSTITUTIONAL ANALYSIS TERMINAL v3.0</div>
+    <div class="term-status">
+      <div class="dot"></div>
+      <span>PERPLEXITY sonar-pro · LIVE WEB SEARCH</span>
+    </div>
+  </div>
+
+  <div class="term-body">
+    <div class="term-main">
+      <div>
+        <div class="label">Activo a analizar</div>
+        <div class="input-row">
+          <input class="ticker-input" id="tickerInput" placeholder="BTCUSDT / ETHUSDT / SOLUSDT..." maxlength="20" />
+          <button class="btn-analyze" id="analyzeBtn" onclick="runAnalysis()">▶ ANALIZAR</button>
+        </div>
+      </div>
+
+      <div class="tag-row">
+        <span class="tag tag-btc" onclick="setTicker('BTCUSDT')">BTC</span>
+        <span class="tag tag-eth" onclick="setTicker('ETHUSDT')">ETH</span>
+        <span class="tag tag-sol" onclick="setTicker('SOLUSDT')">SOL</span>
+        <span class="tag tag-bnb" onclick="setTicker('BNBUSDT')">BNB</span>
+        <span class="tag tag-xrp" onclick="setTicker('XRPUSDT')">XRP</span>
+        <span class="tag tag-link" onclick="setTicker('LINKUSDT')">LINK</span>
+        <span class="tag tag-avax" onclick="setTicker('AVAXUSDT')">AVAX</span>
+        <span class="tag tag-ada" onclick="setTicker('ADAUSDT')">ADA</span>
+      </div>
+
+      <button class="prompt-toggle" id="promptToggle" onclick="togglePrompt()">⚙ VER / EDITAR PROMPT INSTITUCIONAL ▾</button>
+      <div id="promptWrap" style="display:none">
+        <div class="label" style="margin-bottom:4px">Prompt — usa <span style="color:#f0a500">{{TICKER}}</span> como placeholder</div>
+        <textarea class="prompt-area" id="promptArea"></textarea>
+      </div>
+
+      <div id="errorWrap"></div>
+
+      <div class="output-wrap" id="outputWrap">
+        <div class="out-placeholder">
+          <div style="font-size:26px;margin-bottom:12px;color:#1a2a35">▣</div>
+          Selecciona un par de trading y presiona ANALIZAR<div class="cursor-blink"></div>
+          <div style="margin-top:18px;font-size:9px;color:#1a2a35;line-height:2.2">
+            Búsqueda web en tiempo real · Perplexity sonar-pro<br>
+            TradingView · CoinGlass · CryptoQuant · CoinAnk<br>
+            Macro: BTC.D · USDT.D · TOTAL2<br>
+            Temporalidades: 1D → 4H → 15m
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="term-sidebar">
+      <div class="sb-title">Historial sesión</div>
+      <div id="historyList">
+        <div class="hist-empty">Sin análisis aún.<br><br>Los últimos 10 se<br>guardan aquí.</div>
+      </div>
+      <hr class="sb-divider">
+      <div class="sb-note">
+        <span>Motor:</span> sonar-pro<br>
+        <span>Búsqueda:</span> Tiempo real<br>
+        <span>Fuentes:</span> TradingView, CoinGlass, CryptoQuant, CoinAnk<br>
+        <span>Macro:</span> BTC.D · USDT.D · TOTAL2<br>
+        <span>TF:</span> 1D · 4H · 15m<br><br>
+        ⚠ No constituye consejo financiero.
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const PROMPT = `ACTIVO A ANALIZAR:
+{{TICKER}}
+
+Actúa como un trader institucional profesional especializado en criptomonedas, derivados, análisis de liquidez, flujo de capital, market structure, smart money concepts, y gestión avanzada de riesgo.
+
+Tu objetivo NO es describir indicadores por separado. Tu objetivo es construir una lectura integrada del mercado, priorizando: confluencias, probabilidades, contradicciones, comportamiento del smart money, contexto macro crypto, y ventaja estadística.
+
+Debes pensar como un operador de hedge fund, un market maker, o un desk profesional de derivados.
+
+PRINCIPIOS OBLIGATORIOS:
+- Piensa en probabilidades, no en certezas
+- No hagas hype. No fuerces operaciones
+- Si no hay claridad → NO TRADE
+- Prioriza preservación de capital
+- Explica contradicciones del mercado
+- Detecta posibles trampas y manipulación
+- Diferencia comportamiento retail vs institucional
+- Diferencia entre movimiento impulsivo genuino y movimiento impulsado por apalancamiento
+
+FUENTES — busca información actual de:
+- TradingView (estructura del precio, tendencia, niveles)
+- CoinGlass (liquidaciones, open interest, funding, heatmaps)
+- CoinAnk (sentimiento y flujo de mercado)
+- CryptoQuant (datos on-chain y comportamiento de grandes actores)
+
+CONTEXTO MACRO — integra (NO describas por separado):
+- BTC.D → rotación BTC vs altcoins
+- USDT.D → apetito/aversión al riesgo
+- TOTAL2 → fortaleza real del mercado
+
+TEMPORALIDADES (jerarquía):
+- 1D → contexto macro (mayor peso)
+- 4H → estructura operativa
+- 15m → ejecución y confirmación
+
+---
+
+## 1. CONTEXTO GLOBAL
+Tendencia dominante, estructura macro, fase del mercado (acumulación/expansión/distribución/compresión/caída/euforia/manipulación). Quién controla el mercado y si el movimiento parece frágil o sólido. Clasifica: claro / indeciso / manipulativo.
+
+## 2. ESTRUCTURA Y LIQUIDEZ
+Swing highs/lows, equal highs/lows, liquidity pools, stop clusters, order blocks, fair value gaps, imbalances, displacement candles. Detecta: liquidity grabs, fake breakouts, stop hunts, squeezes. Dónde está atrapado el retail vs dónde busca liquidez el smart money.
+
+## 3. DERIVADOS Y POSICIONAMIENTO
+Open Interest actual, Funding Rate, liquidaciones recientes, Long/Short ratio, heatmaps. ¿Sobreapalancado? ¿Fragilidad estructural? Divergencias precio/OI/funding/sentimiento.
+
+## 4. VOLUMEN Y FLUJO DE DINERO
+Entrada/salida de capital, absorción, volumen anómalo. Quién domina: compradores o vendedores. Movimiento orgánico vs especulativo vs manipulación.
+
+## 5. CONFLUENCIAS CLAVE
+Las 2–3 zonas más importantes con mayor confluencia de factores. Explica por qué cada una es crítica.
+
+## 6. SETUP OPERATIVO (SOLO SI EXISTE)
+Si NO hay ventaja estadística clara: **⚠ NO TRADE**.
+Si existe: dirección, zona de entrada, confirmación, invalidación, stop loss, TP1/TP2, relación R/R, probabilidad estimada. Clasifica: continuación / reversión / breakout / trampa / squeeze / mean reversion.
+
+## 7. ESCENARIOS
+- Escenario principal (probabilidad %)
+- Escenario alternativo (probabilidad %)
+- Escenario de invalidación
+¿Qué tendría que ocurrir para cambiar el sesgo?
+
+## 8. AUTOCRÍTICA
+Debilidades del análisis, sesgos, contradicciones, riesgos ocultos. "¿Qué podría estar viendo mal el mercado?" y "¿Qué podría estar viendo mal YO?"
+
+## 9. CONCLUSIÓN INSTITUCIONAL
+Qué está haciendo el smart money, dónde está emocionalmente el retail, si el movimiento parece sostenible, cuál es el riesgo más ignorado actualmente.
+
+DISCLAIMER: Análisis educativo. No constituye consejo financiero ni recomendación de inversión.`;
+
+let history = [];
+let promptVisible = false;
+document.getElementById('promptArea').value = PROMPT;
+
+document.getElementById('tickerInput').addEventListener('input', e => {
+  e.target.value = e.target.value.toUpperCase();
+});
+document.getElementById('tickerInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') runAnalysis();
+});
+
+function setTicker(t) {
+  document.getElementById('tickerInput').value = t;
+  document.getElementById('tickerInput').focus();
+}
+
+function togglePrompt() {
+  promptVisible = !promptVisible;
+  document.getElementById('promptWrap').style.display = promptVisible ? 'block' : 'none';
+  document.getElementById('promptToggle').textContent = promptVisible
+    ? '⚙ OCULTAR PROMPT INSTITUCIONAL ▴'
+    : '⚙ VER / EDITAR PROMPT INSTITUCIONAL ▾';
+}
+
+function esc(t) {
+  return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function renderInline(text) {
+  text = esc(text);
+  text = text.replace(/\*\*([^*]+)\*\*/g, '<span class="md-bold">$1</span>');
+  text = text.replace(/⚠\s*NO TRADE/gi, '<div class="md-notrade">⚠ NO TRADE — Sin ventaja estadística clara</div>');
+  text = text.replace(/🟢/g,'<span class="md-bull">🟢</span>');
+  text = text.replace(/🔴/g,'<span class="md-bear">🔴</span>');
+  text = text.replace(/🟡/g,'<span class="md-neut">🟡</span>');
+  text = text.replace(/⚠/g,'<span style="color:#f0a500">⚠</span>');
+  return text;
+}
+
+function renderMarkdown(text) {
+  const lines = text.split('\n');
+  let html = '';
+  for (const line of lines) {
+    if (!line.trim()) { html += '<div class="md-space"></div>'; continue; }
+    if (line.startsWith('## ')) {
+      html += `<div class="md-h2">${esc(line.slice(3))}</div>`;
+    } else if (line.startsWith('### ')) {
+      html += `<div class="md-h3">${esc(line.slice(4))}</div>`;
+    } else if (/^[-*]\s/.test(line)) {
+      html += `<div class="md-bullet">${renderInline(line.slice(2))}</div>`;
+    } else if (/^\d+\.\s/.test(line)) {
+      html += `<div class="md-bullet">${renderInline(line.replace(/^\d+\.\s/,''))}</div>`;
+    } else {
+      html += `<div class="md-text">${renderInline(line)}</div>`;
+    }
+  }
+  return html;
+}
+
+function renderCitations(citations) {
+  if (!citations || !citations.length) return '';
+  const items = citations.slice(0, 8).map((url, i) => {
+    let display = url;
+    try { display = new URL(url).hostname.replace('www.', ''); } catch(e) {}
+    return `<div class="cite-item">
+      <span class="cite-num">[${i+1}]</span>
+      <a class="cite-link" href="${esc(url)}" target="_blank" rel="noopener">${esc(display)}</a>
+    </div>`;
+  }).join('');
+  return `<div class="citations-wrap">
+    <div class="citations-title">Fuentes consultadas (${citations.length})</div>
+    ${items}
+  </div>`;
+}
+
+function showAnalysis(ticker, text, citations, srcCount) {
+  const out = document.getElementById('outputWrap');
+  const srcLabel = srcCount ? `${srcCount} fuentes` : 'web search';
+  out.innerHTML = `
+    <div class="out-header">
+      <div class="out-header-left">▣ ${esc(ticker)}</div>
+      <div class="out-header-right">
+        <div class="web-badge">● LIVE</div>
+        ${esc(srcLabel)}
+      </div>
+    </div>
+    ${renderMarkdown(text)}
+    ${renderCitations(citations)}`;
+  out.scrollTop = 0;
+}
+
+function updateHistory() {
+  const el = document.getElementById('historyList');
+  if (!history.length) {
+    el.innerHTML = '<div class="hist-empty">Sin análisis aún.<br><br>Los últimos 10 se<br>guardan aquí.</div>';
+    return;
+  }
+  el.innerHTML = history.map((h, i) => `
+    <div class="hist-item${h.active ? ' active' : ''}" onclick="loadHistory(${i})">
+      <div class="hist-ticker">${esc(h.ticker)}</div>
+      <div class="hist-time">${h.time}</div>
+      ${h.citCount ? `<div class="hist-src">● ${h.citCount} fuentes</div>` : ''}
+    </div>`).join('');
+}
+
+function loadHistory(i) {
+  history.forEach((h, j) => h.active = j === i);
+  updateHistory();
+  showAnalysis(history[i].ticker, history[i].analysis, history[i].citations, history[i].citCount);
+}
+
+async function runAnalysis() {
+  const ticker = document.getElementById('tickerInput').value.trim().toUpperCase();
+  if (!ticker) return;
+
+  const template = document.getElementById('promptArea').value;
+  const finalPrompt = template.replace(/\{\{TICKER\}\}/g, ticker).replace(/\{TICKER\}/g, ticker);
+
+  document.getElementById('analyzeBtn').disabled = true;
+  document.getElementById('errorWrap').innerHTML = '';
+  document.getElementById('outputWrap').innerHTML = `
+    <div class="loading-wrap">
+      <div class="spinner"></div>
+      Analizando <span style="color:#f0a500;font-weight:700">${esc(ticker)}</span> con búsqueda web real...
+      <div class="load-sub">
+        Consultando TradingView · CoinGlass · CryptoQuant · CoinAnk<br>
+        Contexto macro: BTC.D · USDT.D · TOTAL2<br>
+        Temporalidades: 1D → 4H → 15m<br>
+        Motor: Perplexity sonar-pro
+      </div>
+    </div>`;
+
+  try {
+    // Llamada a nuestro propio endpoint de Vercel (sin CORS)
+    const res = await fetch('/api/analyze', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt: finalPrompt })
+    });
+
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({}));
+      throw new Error(errData?.error || `Error HTTP ${res.status}`);
+    }
+
+    const data = await res.json();
+    const text = data.choices?.[0]?.message?.content || 'Sin respuesta del modelo.';
+    const citations = data.citations || [];
+
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' })
+      + ' · ' + now.toLocaleDateString('es-CO', { day: '2-digit', month: '2-digit' });
+
+    history.forEach(h => h.active = false);
+    history.unshift({ ticker, analysis: text, citations, citCount: citations.length, time: timeStr, active: true });
+    history = history.slice(0, 10);
+    updateHistory();
+    showAnalysis(ticker, text, citations, citations.length);
+
+  } catch (err) {
+    document.getElementById('errorWrap').innerHTML = `<div class="err">⚠ ${esc(err.message || 'Error de conexión')}</div>`;
+    document.getElementById('outputWrap').innerHTML = '<div class="out-placeholder">Error al obtener análisis.<br>Revisa la configuración de Vercel.</div>';
+  } finally {
+    document.getElementById('analyzeBtn').disabled = false;
+  }
+}
+</script>
+</body>
+</html>
